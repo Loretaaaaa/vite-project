@@ -12,24 +12,33 @@ interface Props {
     updateColumn: (id: Id, title: string) => void;
 
     createTask: (columnId: Id) => void;
-    updateTask: (id:Id, content: string) => void;
+    updateTask: (id: Id, content: string) => void;
     deleteTask: (columnId: Id) => void;
     tasks: Task[];
 }
 
-function ColumnContainer (props: Props) {
-    const { column, deleteColumn, updateColumn, createTask,
-    tasks, deleteTask } = props;
+function ColumnContainer( {
+    column,
+    deleteColumn,
+    updateColumn,
+    createTask,
+    tasks,
+    deleteTask,
+    updateTask,
+}: Props) {
+    const [editMode, setEditMode] = useState(false);
 
-    const[editMode, setEditMode] = useState(false);
+    const tasksIds = useMemo(()=> {
+        return tasks.map((task)=> task.id);
+    }, [tasks]);
 
-    const { 
-        setNodeRef, 
-        attributes, 
-        listeners, 
-        transform, 
+    const {
+        setNodeRef,
+        attributes,
+        listeners,
+        transform,
         transition,
-        isDragging, 
+        isDragging,
     } = useSortable({
         id: column.id,
         data: {
@@ -42,12 +51,13 @@ function ColumnContainer (props: Props) {
         transition,
         transform: CSS.Transform.toString(transform),
     };
-    if(isDragging) {
+
+    if (isDragging) {
         return (
-            <div 
-                    ref={setNodeRef}
-                    style ={style}
-                    className="
+            <div
+                ref={setNodeRef}
+                style={style}
+                className="
                     bg-columnBackgroundColor
                     opacity-40
                     border-2
@@ -59,10 +69,12 @@ function ColumnContainer (props: Props) {
                     flex
                     flex-col
                     "
-                    >
-                </div>
+            >
+            </div>
         );
     }
+
+
     return (
         <div
             ref={setNodeRef}
@@ -76,15 +88,15 @@ function ColumnContainer (props: Props) {
             flex
             flex-col
             "
-            >
-                <div 
+        >
+            <div
                 {...attributes}
                 {...listeners}
-                onClick={()=> {
+                onClick={() => {
                     setEditMode(true);
                 }}
                 className="
-                bg-mainBackgrtoundColor
+                bg-mainBackgroundColor
                 text-md
                 h-[60px]
                 cursor-grab
@@ -98,9 +110,9 @@ function ColumnContainer (props: Props) {
                 items-center
                 justify-between
                 "
-                >
-                    <div className="flex gap-2">
-                        <div
+            >
+                <div className="flex gap-2">
+                    <div
                         className="
                         
                     flex
@@ -114,62 +126,59 @@ function ColumnContainer (props: Props) {
                     "
                     >
                         0
-                        </div>
-                        {!editMode && column.title}
-                        {editMode && (
-                            <input
-                            className="
-                            bg-black
-                            focus: border-rose-500
-                            border rounded
-                            outline-none
-                            px-2
-                            "
-                                value={column.title}
-                                onChange={e =>updateColumn(column.id, e.target.value)}
-                                autoFocus
-                                onBlur={() => {
-                                    setEditMode(false);
-                                }}
-                                onKeyDown={(e)=> {
-                                    if(e.key !== "Enter") return;
-                                    setEditMode(false);
-                                }}
-                            />
-                        )}
-                        
-                        </div>
-                        <button 
-                        onClick={() => {
-                            deleteColumn(column.id);
-                        }}
-                        className="
+                    </div>
+                    {!editMode && column.title}
+                    {editMode && (
+                        <input
+                            className="bg-black focus: border-rose-500 border rounded outline-none px-2"
+                            value={column.title}
+                            onChange={e => updateColumn(column.id, e.target.value)}
+                            autoFocus
+                            onBlur={() => {
+                                setEditMode(false);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key !== "Enter") return;
+                                setEditMode(false);
+                            }}
+                        />
+                    )}
+
+                </div>
+                <button
+                    onClick={() => {
+                        deleteColumn(column.id);
+                    }}
+                    className="
                         stroke-gray-500
-                        hover: stroke-white
-                        hover: bg-columnBackgroundColor
+                        hover:stroke-white
+                        hover:bg-indigo-600
                         rounded
                         px-1
                         py-2
                         "
-                        >
-                            <TrashIcon />
-                        </button>
-                </div>
-                
-                {/* Column task container */}
-                <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto"> 
-                    {tasks.map((task) => (
-                        <TaskCard 
-                            key ={task.id} 
-                            task={task} 
-                            deleteTask={deleteTask}
-                            updateTask={updateTask} 
-                        />
-                        // <div key={task.id}>{task.content}</div>
-                    ))}
-                </div>
-                {/*Column footer */}
-                <button
+                >
+                    <TrashIcon />
+                </button>
+            </div>
+
+            {/* Column task container */}
+            <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
+                <SortableContext items={tasksIds}>
+                {tasks.map((task) => (
+                    <TaskCard 
+                        key={task.id}
+                        task={task}
+                        deleteTask={deleteTask}
+                        updateTask={updateTask}
+                    />
+                    // <div key={task.id}>{task.content}</div>
+                ))}
+                </SortableContext>
+            </div>
+            
+            {/*Column footer */}
+            <button
                 className="flex gap-2 items-center
                 border-columnBackgroundColor border-2 rounded-md p-4
                 border-x-columnBackgroundColor
@@ -178,14 +187,14 @@ function ColumnContainer (props: Props) {
                 onClick={() => {
                     createTask(column.id);
                 }}
-                >
-                    <PlusIcon />
-                    Add task
-                </button>
+            >
+                <PlusIcon />
+                Add task
+            </button>
 
         </div>
     );
-    
+
 }
 
 export default ColumnContainer;
