@@ -1,7 +1,7 @@
 export type Id = string | number;
 export type Column = {
-    id: IdleDeadline;
-    title: string;
+  id: Id;
+  title: string;
 };
 
 export type Task = {
