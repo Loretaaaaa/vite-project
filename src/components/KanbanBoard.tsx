@@ -15,7 +15,7 @@ import {
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
 import TaskCard from './TaskCard';
-import { getColumns } from '../api/columns';
+import { addColumn, getColumns, removeColumn } from '../api/columns';
 
 function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>([]);
@@ -151,16 +151,15 @@ function KanbanBoard() {
     setTasks(newTasks);
   }
 
-  function createNewColumn() {
-    const columnToAdd: Column = {
-      id: generateId(),
-      title: `Column ${columns.length + 1}`,
-    };
+  async function createNewColumn() {
+   
+    const columnToAdd = await addColumn('title')
 
     setColumns(columns => [...columns, columnToAdd]);
   }
 
   function deleteColumn(id: Id) {
+    removeColumn(id);
     const filteredColumns = columns.filter(col => col.id !== id);
     setColumns(filteredColumns);
 
