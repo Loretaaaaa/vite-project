@@ -9,18 +9,15 @@ import { getTasks } from './api/tasks';
 function App() {
   useEffect(() => {
     getTasks()
-    .then(tasks => {
-      console.log('Loreta is a champion and Tasks fetched', tasks);
-      
-    })
-    .catch(err => {
-      console.error('Failed to fetch tasks', err.message)
-    });
+      .then(tasks => {
+        console.log('Loreta is a champion and Tasks fetched', tasks);
+      })
+      .catch(err => {
+        console.error('Failed to fetch tasks', err.message)
+      });
   }, []);
 
-
   return <KanbanBoard />;
-
 }
 
 export default App;
