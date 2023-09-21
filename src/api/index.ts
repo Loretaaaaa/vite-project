@@ -1,1 +1,2 @@
-export const BASE_URL = 'http://localhost:1337';
+export const BASE_URL = 'http://localhost:1337/api';
+export const token = '2c67e1799ac1c59d60326d328f3b9226dca85eff76aba47aed8ef7c3736e20ee67db2bef16591776119b53915bb5651f329367cbdfe9500a67c2e13e89ad92410687756d3dce886f82a627977b014dd926f507e01b4571b1e3e7e1d0bfbad725ef39e8e588b8c3627c6003a143d5c7a83cc816e572a26e23dbdc2e66a18000e2';

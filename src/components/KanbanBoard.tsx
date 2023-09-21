@@ -1,5 +1,5 @@
 import PlusIcon from '../icons/PlusIcon';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Column, Id, Task } from '../types';
 import ColumnContainer from './ColumnContainer';
 import {
@@ -15,6 +15,7 @@ import {
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
 import TaskCard from './TaskCard';
+import { getColumns } from '../api/columns';
 
 function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>([]);
@@ -25,6 +26,17 @@ function KanbanBoard() {
   const [activeColumn, setActiveColumn] = useState<Column | null>(null);
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+
+
+  useEffect(()=> {
+    getColumns()
+    .then((columnsFromBack)=> {
+      setColumns(columnsFromBack);
+    })
+
+
+
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
