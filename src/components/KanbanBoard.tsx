@@ -15,7 +15,7 @@ import {
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
 import TaskCard from './TaskCard';
-import { addColumn, getColumns, removeColumn } from '../api/columns';
+import { addColumn, getColumns, removeColumn, editColumn } from '../api/columns';
 
 function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>([]);
@@ -28,14 +28,13 @@ function KanbanBoard() {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
 
-  useEffect(()=> {
+  useEffect(() => {
     getColumns()
-    .then((columnsFromBack)=> {
-      setColumns(columnsFromBack);
-    })
-
-
-
+      .then((columnsFromBack) => {
+        setColumns(columnsFromBack);
+        setTasks(columnsFromBack.map((column) => column.tasks.map(t => ({ ...t, columnId: column.id }))).flat())
+        console.log("🚀 ~ file: KanbanBoard.tsx:36 ~ .then ~ columnsFromBack.map((column) => column.tasks).flat():", columnsFromBack.map((column) => column.tasks).flat())
+      })
   }, [])
 
   const sensors = useSensors(
@@ -85,7 +84,11 @@ function KanbanBoard() {
             onClick={() => {
               createNewColumn();
             }}
-            className="
+            className={`
+            ${
+              // if there is no column animate
+              true ? 'animate-bounce duration-75' : ''
+              }
             h-[60px]
             w-[350px]
             cursor-pointer
@@ -98,7 +101,7 @@ function KanbanBoard() {
             hover: ring-2
             flex
             gap-2
-            "
+            `}
           >
             <PlusIcon />
             Add Column
@@ -152,9 +155,7 @@ function KanbanBoard() {
   }
 
   async function createNewColumn() {
-   
     const columnToAdd = await addColumn('title')
-
     setColumns(columns => [...columns, columnToAdd]);
   }
 
@@ -167,13 +168,15 @@ function KanbanBoard() {
     setTasks(newTasks);
   }
 
-  function updateColumn(id: Id, title: string) {
+  async function updateColumn(id: Id, title: string) {
+    editColumn(id, { title });
     const newColumns = columns.map(col => {
       if (col.id !== id) return col;
-      return { ...col, title };
+      return { ...col, title }
     });
 
     setColumns(newColumns);
+
   }
   function onDragStart(event: DragStartEvent) {
     if (event.active.data.current?.type === 'Column') {
