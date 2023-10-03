@@ -18,7 +18,6 @@ import TaskCard from './TaskCard';
 import { addColumn, getColumns, removeColumn, editColumn } from '../api/columns';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { addTask, removeTask, editTask } from '../api/tasks';
-// import Modal from './Modal';
 
 function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>([]);
@@ -163,8 +162,6 @@ function KanbanBoard() {
             Add Column
           </button>
         </div>
-        {/* 
-        <Modal /> */}
 
         <DeleteConfirmationModal
           isVisible={isDeleteConfirmationVisible}
@@ -197,15 +194,6 @@ function KanbanBoard() {
     </div>
   );
 
-  // function createTask(columnId: Id) {
-  //   const newTask: Task = {
-  //     id: generateId(),
-  //     columnId,
-  //     content: `Task ${tasks.length + 1}`,
-  //   };
-
-  //   setTasks([...tasks, newTask]);
-  // }
   async function createTask(columnId: Id) {
     try {
       const newTask = await addTask(columnId, `Task ${tasks.length + 1}`);
@@ -215,10 +203,6 @@ function KanbanBoard() {
       console.error('Error creating task:', error);
     }
   }
-
-
-
-
 
   async function deleteTask(id: Id) {
     try {
