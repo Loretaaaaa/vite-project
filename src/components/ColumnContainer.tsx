@@ -8,13 +8,13 @@ import TaskCard from './TaskCard';
 
 interface Props {
   column: Column;
-  deleteColumn: (id: Id) => void;
-  updateColumn: (id: Id, title: string) => void;
-
-  createTask: (columnId: Id) => void;
-  updateTask: (id: Id, content: string) => void;
+  deleteColumn?: (id: Id) => void;
+  updateColumn?: (id: Id, title: string) => void;
+  createTask?: (columnId: Id) => void;
+  updateTask: (id: Id, title: string) => void;
   deleteTask: (columnId: Id) => void;
   tasks: Task[];
+  openDeleteConfirmation: (type: 'column' | 'task', id: Id) => void;
 }
 
 function ColumnContainer({
@@ -122,7 +122,7 @@ function ColumnContainer({
             <input
               className="bg-black focus:border-rose-500 border rounded outline-none px-2"
               value={column.title}
-              onChange={e => updateColumn(column.id, e.target.value)}
+              onChange={e => updateColumn?.(column.id, e.target.value)}
               autoFocus
               onBlur={() => {
                 setEditMode(false);
@@ -136,7 +136,7 @@ function ColumnContainer({
         </div>
         <button
           onClick={() => {
-            deleteColumn(column.id);
+            deleteColumn?.(column.id);
           }}
           className={`
           stroke-gray-500
@@ -175,7 +175,7 @@ function ColumnContainer({
             active:bg-black
         `}
         onClick={() => {
-          createTask(column.id);
+          createTask?.(column.id);
         }}
       >
         <PlusIcon />

@@ -10,6 +10,7 @@ interface Props {
 }
 
 function TaskCard({ task, deleteTask, updateTask }: Props) {
+
   const [mouseIsOver, setMouseIsOver] = useState(false);
   const [editMode, setEditMode] = useState(true);
 
@@ -31,6 +32,7 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
     setEditMode(prev => !prev);
     setMouseIsOver(false);
   };
+  console.log("Updated task content:", task.title);
 
   if (isDragging) {
     return (
@@ -64,7 +66,7 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
                     w-full resize-none border-none rounded bg-transparent
                     text-white focus:outline-none
                     "
-          value={task.content}
+          value={task.title}
           autoFocus
           placeholder="Task content here"
           onBlur={toggleEditMode}
@@ -74,6 +76,7 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
             }
           }}
           onChange={e => updateTask(task.id, e.target.value)}
+
         ></textarea>
       </div>
     );
@@ -99,7 +102,7 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
         className="my-auto h-[90] w-full overflow-y-auto
                 overflow-x-hidden whitespace-pre-wrap"
       >
-        {task.content}
+        {task.title}
       </p>
       {mouseIsOver && (
         <button

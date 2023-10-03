@@ -46,6 +46,7 @@ export const removeColumn = async (id: Id) => {
         },
       }
     );
+
     return data;
   } catch (error) {
     throw new Error("Failed to delete column");

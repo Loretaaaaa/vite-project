@@ -16,6 +16,9 @@ import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { createPortal } from 'react-dom';
 import TaskCard from './TaskCard';
 import { addColumn, getColumns, removeColumn, editColumn } from '../api/columns';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
+import { addTask, removeTask, editTask } from '../api/tasks';
+// import Modal from './Modal';
 
 function KanbanBoard() {
   const [columns, setColumns] = useState<Column[]>([]);
@@ -27,13 +30,17 @@ function KanbanBoard() {
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'column' | 'task', id: Id } | null>(null);
+
+
 
   useEffect(() => {
     getColumns()
       .then((columnsFromBack) => {
         setColumns(columnsFromBack);
         setTasks(columnsFromBack.map((column) => column.tasks.map(t => ({ ...t, columnId: column.id }))).flat())
-        console.log("🚀 ~ file: KanbanBoard.tsx:36 ~ .then ~ columnsFromBack.map((column) => column.tasks).flat():", columnsFromBack.map((column) => column.tasks).flat())
+        // console.log("🚀 ~ file: KanbanBoard.tsx:36 ~ .then ~ columnsFromBack.map((column) => column.tasks).flat():", columnsFromBack.map((column) => column.tasks).flat())
       })
   }, [])
 
@@ -44,6 +51,53 @@ function KanbanBoard() {
       },
     })
   );
+
+  function openDeleteConfirmation(type: 'column' | 'task', id: Id) {
+    console.log('Opening delete confirmation', type, id);
+    setItemToDelete({ type, id });
+    setIsDeleteConfirmationVisible(true);
+  }
+
+  function closeDeleteConfirmation() {
+    setIsDeleteConfirmationVisible(false);
+    setItemToDelete(null);
+  }
+
+  async function handleDelete() {
+    const { type, id } = itemToDelete!;
+
+    if (type === 'column') {
+      await deleteColumn(id);
+    } else if (type === 'task') {
+      deleteTask(id)
+    }
+    closeDeleteConfirmation();
+
+
+  }
+  // async function handleDelete() {
+  //   const { type, id } = itemToDelete!;
+
+  //   if (type === 'column') {
+  //     try {
+  //       await deleteColumn(id);
+  //       closeDeleteConfirmation();
+  //     } catch (error) {
+  //       // Handle any error that occurred during deletion
+  //       console.error('Error deleting column:', error);
+  //     }
+  //   } else if (type === 'task') {
+  //     try {
+  //       await deleteTask(id);
+  //       closeDeleteConfirmation();
+  //     } catch (error) {
+  //       // Handle any error that occurred during deletion
+  //       console.error('Error deleting task:', error);
+  //     }
+  //   }
+  // }
+
+
   return (
     <div
       className="
@@ -57,6 +111,7 @@ function KanbanBoard() {
         px-[40px]
         "
     >
+
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
@@ -70,12 +125,13 @@ function KanbanBoard() {
                 <ColumnContainer
                   key={col.id}
                   column={col}
-                  deleteColumn={deleteColumn}
+                  deleteColumn={(id: Id) => openDeleteConfirmation('column', id)}
                   updateColumn={updateColumn}
                   createTask={createTask}
                   deleteTask={deleteTask}
                   updateTask={updateTask}
                   tasks={tasks.filter(task => task.columnId === col.id)}
+                  openDeleteConfirmation={openDeleteConfirmation}
                 />
               ))}
             </SortableContext>
@@ -87,7 +143,7 @@ function KanbanBoard() {
             className={`
             ${
               // if there is no column animate
-              true ? 'animate-bounce duration-75' : ''
+              columns.length === 0 ? 'animate-bounce duration-75' : ''
               }
             h-[60px]
             w-[350px]
@@ -107,6 +163,15 @@ function KanbanBoard() {
             Add Column
           </button>
         </div>
+        {/* 
+        <Modal /> */}
+
+        <DeleteConfirmationModal
+          isVisible={isDeleteConfirmationVisible}
+          onConfirm={handleDelete}
+          onCancel={closeDeleteConfirmation}
+        />
+
 
         {createPortal(
           <DragOverlay>
@@ -119,6 +184,7 @@ function KanbanBoard() {
                 deleteTask={deleteTask}
                 updateTask={updateTask}
                 tasks={tasks.filter(task => task.columnId === activeColumn.id)}
+                openDeleteConfirmation={openDeleteConfirmation}
               />
             )}
             {activeTask && (
@@ -131,27 +197,53 @@ function KanbanBoard() {
     </div>
   );
 
-  function createTask(columnId: Id) {
-    const newTask: Task = {
-      id: generateId(),
-      columnId,
-      content: `Task ${tasks.length + 1}`,
-    };
+  // function createTask(columnId: Id) {
+  //   const newTask: Task = {
+  //     id: generateId(),
+  //     columnId,
+  //     content: `Task ${tasks.length + 1}`,
+  //   };
 
-    setTasks([...tasks, newTask]);
+  //   setTasks([...tasks, newTask]);
+  // }
+  async function createTask(columnId: Id) {
+    try {
+      const newTask = await addTask(columnId, `Task ${tasks.length + 1}`);
+      setTasks([...tasks, newTask]);
+      console.log("🚀 ~ file: KanbanBoard.tsx:212 ~ createTask ~ newTask:", newTask)
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
   }
 
-  function deleteTask(id: Id) {
-    const newTasks = tasks.filter(task => task.id !== id);
-    setTasks(newTasks);
+
+
+
+
+  async function deleteTask(id: Id) {
+    try {
+      await removeTask(id);
+
+      const newTasks = tasks.filter(task => task.id !== id);
+      setTasks(newTasks);
+    } catch (error) {
+      console.log("error deleting task", error);
+    }
+
   }
 
-  function updateTask(id: Id, content: string) {
-    const newTasks = tasks.map(task => {
-      if (task.id !== id) return task;
-      return { ...task, content };
-    });
-    setTasks(newTasks);
+  function updateTask(id: Id, title: string) {
+    try {
+      editTask(id, title);
+      const newTasks = tasks.map(task => {
+        if (task.id !== id) return task;
+        return { ...task, title };
+      });
+      setTasks(newTasks);
+    } catch (error) {
+      throw new Error("Failed to update task");
+    }
+
   }
 
   async function createNewColumn() {
