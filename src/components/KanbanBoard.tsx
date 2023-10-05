@@ -63,16 +63,18 @@ function KanbanBoard() {
   }
 
   async function handleDelete() {
-    const { type, id } = itemToDelete!;
+    if (itemToDelete) {
+      const { type, id } = itemToDelete!;
 
-    if (type === 'column') {
-      await deleteColumn(id);
-    } else if (type === 'task') {
-      deleteTask(id)
+      if (type === 'column') {
+        await deleteColumn(id);
+      } else if (type === 'task') {
+        deleteTask(id)
+      }
+      closeDeleteConfirmation();
+    } else {
+      console.error("itemToDelete is null")
     }
-    closeDeleteConfirmation();
-
-
   }
   // async function handleDelete() {
   //   const { type, id } = itemToDelete!;

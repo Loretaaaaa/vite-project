@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 
 interface DeleteConfirmationModalProps {
   isVisible: boolean;
@@ -12,6 +12,27 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (isVisible) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onConfirm();
+        } else if (e.key === 'Escape') {
+          onCancel();
+        }
+      }
+    };
+
+    if (isVisible) {
+      window.addEventListener('keydown', handleKeyPress);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [isVisible, onConfirm, onCancel])
+
+
   return (
     <Transition.Root show={isVisible} as={Fragment}>
       <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" onClose={onCancel}>
